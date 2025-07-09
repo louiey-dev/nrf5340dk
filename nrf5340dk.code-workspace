@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "C:/ncs/v3.0.2"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"gpio.h": "c",
+			"kernel.h": "c",
+			"type_traits": "c",
+			"bsp.h": "c"
+		}
+	}
+}

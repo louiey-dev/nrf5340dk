@@ -5,46 +5,51 @@
  */
 
 #include <stdio.h>
-#include <zephyr/kernel.h>
-#include <zephyr/drivers/gpio.h>
-
 #include "bsp.h"
+
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS   1000
 
-/* The devicetree node identifier for the "led0" alias. */
-#define LED0_NODE DT_ALIAS(led0)
-
-/*
- * A build error on this line means your board is unsupported.
- * See the sample documentation for information on how to fix this.
- */
-static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+/* EXTERNS */
+extern struct gpio_dt_spec leds[NUM_LED];
 
 int main(void)
 {
 	int ret;
-	bool led_state = true;
+	bool led_state = false;
+	int led_offset = 0;
 
-	LOG("My my5340dk sample\n");
+	LOG("My nrf5340dk sample\n");
 
-	if (!gpio_is_ready_dt(&led)) {
-		return 0;
-	}
-
-	ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
-	if (ret < 0) {
-		return 0;
-	}
+	bsp_gpio_init();
 
 	while (1) {
-		ret = gpio_pin_toggle_dt(&led);
+		/* Toggle the LED */
+#if 0		
+		ret = bsp_gpio_toggle(leds[led_offset]);
 		if (ret < 0) {
-			return 0;
+			ERR("Failed to toggle LED %d\n", leds[led_offset].pin);
+			return ret;
 		}
 
-		led_state = !led_state;
-		MSG("my5340dk LED state: %s\n", led_state ? "ON" : "OFF");
+		MSG("nrf5340dk LED%d state: %s\n", leds[led_offset++].pin, led_state ? "ON" : "OFF");
+#endif
+
+#if 1
+		ret = bsp_gpio_set(leds[led_offset], led_state ? 1 : 0);
+		if (ret < 0) {
+			ERR("Failed to set LED %d\n", leds[led_offset].pin);
+			return ret;
+		}
+
+		MSG("nrf5340dk LED%d state: %s\n", leds[led_offset++].pin, led_state ? "ON" : "OFF");
+#endif
+		if(led_offset >= NUM_LED)
+		{
+			led_offset = 0;
+			led_state = !led_state;
+		}
+
 		k_msleep(SLEEP_TIME_MS);
 	}
 	return 0;

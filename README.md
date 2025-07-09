@@ -19,3 +19,4 @@ Test code on nrf5340dk board
 - 2025.07.09
   - Created workspace with simple blink sample code
   - CMakeLists.txt modified to include bsp folder path
+  - Creates bsp folder and added gpio code here

@@ -8,6 +8,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 
+#include "bsp.h"
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS   1000
 
@@ -25,7 +26,7 @@ int main(void)
 	int ret;
 	bool led_state = true;
 
-	printf("My my5340dk sample\n");
+	LOG("My my5340dk sample\n");
 
 	if (!gpio_is_ready_dt(&led)) {
 		return 0;
@@ -43,7 +44,7 @@ int main(void)
 		}
 
 		led_state = !led_state;
-		printf("my5340dk LED state: %s\n", led_state ? "ON" : "OFF");
+		MSG("my5340dk LED state: %s\n", led_state ? "ON" : "OFF");
 		k_msleep(SLEEP_TIME_MS);
 	}
 	return 0;

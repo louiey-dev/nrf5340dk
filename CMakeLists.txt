@@ -3,4 +3,7 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(nrf5340dk)
 
+target_include_directories(app PRIVATE
+    src/bsp)
+
 target_sources(app PRIVATE src/main.c)

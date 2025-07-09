@@ -18,4 +18,4 @@ Test code on nrf5340dk board
 ## History
 - 2025.07.09
   - Created workspace with simple blink sample code
-  - 
+  - CMakeLists.txt modified to include bsp folder path

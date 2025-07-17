@@ -12,7 +12,15 @@
 			"gpio.h": "c",
 			"kernel.h": "c",
 			"type_traits": "c",
-			"bsp.h": "c"
-		}
+			"bsp.h": "c",
+			"bluetooth.h": "c",
+			"settings.h": "c",
+			"log.h": "c",
+			"device.h": "c",
+			"array": "c",
+			"string": "c",
+			"string_view": "c"
+		},
+		"nrf-connect.applications": []
 	}
 }

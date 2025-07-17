@@ -20,3 +20,9 @@ Test code on nrf5340dk board
   - Created workspace with simple blink sample code
   - CMakeLists.txt modified to include bsp folder path
   - Creates bsp folder and added gpio code here
+- 2025.07.17
+  - added branch, lbs_porting
+  - lbs function added (copied from samples)
+    - using prj_minimal.conf
+  - lbs_porting : preparing basic read/write function working version
+- 

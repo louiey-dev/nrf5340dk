@@ -1,0 +1,9 @@
+source "Kconfig.zephyr"  
+
+config MYFUNCTION
+    bool "Enable my function"
+    default n
+
+config LOUIE_TEST
+    bool "Enable LOUIE test"
+    default n

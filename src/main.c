@@ -102,7 +102,7 @@ int main(void)
 		MSG("nrf5340dk LED%d state: %s\n", leds[led_offset++].pin, led_state ? "ON" : "OFF");
 #endif
 
-#if 1
+#if 0
 		ret = bsp_gpio_set(leds[led_offset], led_state ? 1 : 0);
 		if (ret < 0) {
 			ERR("Failed to set LED %d\n", leds[led_offset].pin);

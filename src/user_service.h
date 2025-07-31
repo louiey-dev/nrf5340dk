@@ -3,7 +3,7 @@
 
 #include <zephyr/types.h>
 
-/** @brief LBS Service UUID. */
+/** @brief User Service UUID. */
 #define BT_UUID_USER_VAL \
 	BT_UUID_128_ENCODE(0x00001523, 0x1212, 0xefde, 0x1523, 0x785feabcd123)
 
@@ -27,7 +27,7 @@ typedef void (*led_cb_t)(const bool led_state);
 /** @brief Callback type for when the button state is pulled. */
 typedef bool (*button_cb_t)(void);
 
-/** @brief Callback struct used by the LBS Service. */
+/** @brief Callback struct used by the User Service. */
 struct bt_user_cb {
 	/** LED state change callback. */
 	led_cb_t    led_cb;
@@ -35,7 +35,7 @@ struct bt_user_cb {
 	button_cb_t button_cb;
 };
 
-/** @brief Initialize the LBS Service.
+/** @brief Initialize the User Service.
  *
  * This function registers a GATT service with two characteristics: Button
  * and LED.

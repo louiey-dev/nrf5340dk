@@ -15,8 +15,6 @@
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/bluetooth/gatt.h>
 
-#include <bluetooth/services/lbs.h>
-
 #include <zephyr/settings/settings.h>
 
 // #include <dk_buttons_and_leds.h>
@@ -46,7 +44,7 @@ static const struct bt_data ad[] = {
 };
 
 static const struct bt_data sd[] = {
-	BT_DATA_BYTES(BT_DATA_UUID128_ALL, BT_UUID_LBS_VAL),
+	BT_DATA_BYTES(BT_DATA_UUID128_ALL, BT_UUID_USER_VAL),
 };
 
 static void adv_work_handler(struct k_work *work)
@@ -91,7 +89,6 @@ static void recycled_cb(void)
 	advertising_start();
 }
 
-#ifdef CONFIG_BT_LBS_SECURITY_ENABLED
 static void security_changed(struct bt_conn *conn, bt_security_t level,
 			     enum bt_security_err err)
 {
@@ -106,18 +103,14 @@ static void security_changed(struct bt_conn *conn, bt_security_t level,
 		       bt_security_err_to_str(err));
 	}
 }
-#endif
 
 BT_CONN_CB_DEFINE(conn_callbacks) = {
 	.connected        = connected,
 	.disconnected     = disconnected,
 	.recycled         = recycled_cb,
-#ifdef CONFIG_BT_LBS_SECURITY_ENABLED
 	.security_changed = security_changed,
-#endif
 };
 
-#if defined(CONFIG_BT_LBS_SECURITY_ENABLED)
 static void auth_passkey_display(struct bt_conn *conn, unsigned int passkey)
 {
 	char addr[BT_ADDR_LE_STR_LEN];
@@ -164,10 +157,8 @@ static struct bt_conn_auth_info_cb conn_auth_info_callbacks = {
 	.pairing_complete = pairing_complete,
 	.pairing_failed = pairing_failed
 };
-#else
-static struct bt_conn_auth_cb conn_auth_callbacks;
-static struct bt_conn_auth_info_cb conn_auth_info_callbacks;
-#endif
+// static struct bt_conn_auth_cb conn_auth_callbacks;
+// static struct bt_conn_auth_info_cb conn_auth_info_callbacks;
 
 static void app_led_cb(bool led_state)
 {

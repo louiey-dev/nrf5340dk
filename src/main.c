@@ -23,7 +23,7 @@ int main(void)
 	int exercise_num = 3;
 
 	LOG("My nrf5340dk sample\n");
-	LOG("Starting Bluetooth Peripheral LBS sample\n");
+	LOG("Starting Bluetooth Peripheral User svc sample\n");
 
 	LOG_INF("nRF Connect SDK Fundamentals");
 	LOG_INF("Exercise %d", exercise_num);
@@ -37,7 +37,7 @@ int main(void)
 	/* Initialize the BSP GPIO */
 	bsp_button_led_init(button_changed);
 
-	if (IS_ENABLED(CONFIG_BT_LBS_SECURITY_ENABLED)) {
+	if (IS_ENABLED(CONFIG_BT_USER_SECURITY_ENABLED)) {
 		err = bt_conn_auth_cb_register(&conn_auth_callbacks);
 		if (err) {
 			ERR("Failed to register authorization callbacks.\n");
@@ -65,13 +65,13 @@ int main(void)
 
 	err = bt_user_init(&user_callback);
 	if (err) {
-		ERR("Failed to init LBS (err:%d)\n", err);
+		ERR("Failed to init user func (err:%d)\n", err);
 		return 0;
 	}
 
 	k_work_init(&adv_work, adv_work_handler);
 	advertising_start();
-	LOG("LBS initialized\n");
+	LOG("User svc initialized\n");
 
 	while (1) {
 #if 0

@@ -1,7 +1,7 @@
 #include "bsp.h"
 #include <zephyr/drivers/gpio.h>
 
-struct gpio_dt_spec leds[NUM_LED] = { LED0, LED1, LED2, LED3 };
+static struct gpio_dt_spec leds[NUM_LED] = { LED0, LED1, LED2, LED3 };
 
 int bsp_gpio_init(void){
 	int ret = 0;

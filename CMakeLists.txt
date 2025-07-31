@@ -8,8 +8,9 @@ target_include_directories(app PRIVATE
 
 target_sources(app PRIVATE 
     src/main.c
-    src/myfunction.c
+    src/user_service.c
     src/bsp/bsp_gpio.c
+    src/bsp/bsp_button_led.c
     )
 
 target_sources_ifdef(CONFIG_MYFUNCTION app PRIVATE src/myfunction.c)

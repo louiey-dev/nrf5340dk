@@ -3,9 +3,13 @@ Test code on nrf5340dk board
 
 ## Feature
 - GPIO control via App
+- ~~LED/Buttons control~~
 - Sensors read and push to App
 - Display LCD
 - Buzzer via PWM
+- BLE features
+  - Notify to App
+  - Read/Write from App
 
 ## Environment
 - EVM : nrf5340dk
@@ -25,4 +29,9 @@ Test code on nrf5340dk board
   - lbs function added (copied from samples)
     - using prj_minimal.conf
   - lbs_porting : preparing basic read/write function working version
-- 
+- 2025.07.31
+  - Button reading function added with timer
+  - LED control APIs added
+  - BLE feature, notify/read/write implementing
+    - Need more test and optimization
+    - added user_xxx and replaced lbs_xxx files

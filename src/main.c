@@ -5,9 +5,8 @@
  */
 
 #include <stdio.h>
-#include "bsp/bsp.h"
-#include "lbs_init.c"
-#include <zephyr/logging/log.h>
+// #include "bsp/bsp.h"
+#include "user_service_init.c"
 
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS   1000
@@ -15,13 +14,10 @@
 /* EXTERNS */
 extern struct gpio_dt_spec leds[NUM_LED];
 
-LOG_MODULE_REGISTER(nrf5340dk, LOG_LEVEL_DBG);
+// LOG_MODULE_REGISTER(nrf5340dk, LOG_LEVEL_DBG);
 
 int main(void)
 {
-	int ret;
-	bool led_state = false;
-	int led_offset = 0;
 	int err;
 	uint8_t data[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 'H', 'e', 'l', 'l', 'o'};
 	int exercise_num = 3;
@@ -39,20 +35,7 @@ int main(void)
 	LOG_HEXDUMP_INF(data, sizeof(data), "Sample Data!");
 
 	/* Initialize the BSP GPIO */
-	bsp_gpio_init();
-
-	/* LBS features */
-	err = dk_leds_init();
-	if (err) {
-		printk("LEDs init failed (err %d)\n", err);
-		return 0;
-	}
-
-	err = init_button();
-	if (err) {
-		printk("Button init failed (err %d)\n", err);
-		return 0;
-	}
+	bsp_button_led_init(button_changed);
 
 	if (IS_ENABLED(CONFIG_BT_LBS_SECURITY_ENABLED)) {
 		err = bt_conn_auth_cb_register(&conn_auth_callbacks);
@@ -80,7 +63,7 @@ int main(void)
 		settings_load();
 	}
 
-	err = bt_lbs_init(&lbs_callbacs);
+	err = bt_user_init(&user_callback);
 	if (err) {
 		ERR("Failed to init LBS (err:%d)\n", err);
 		return 0;
@@ -91,33 +74,18 @@ int main(void)
 	LOG("LBS initialized\n");
 
 	while (1) {
+#if 0
 		/* Toggle the LED */
-#if 0
-		ret = bsp_gpio_toggle(leds[led_offset]);
-		if (ret < 0) {
-			ERR("Failed to toggle LED %d\n", leds[led_offset].pin);
-			return ret;
-		}
-
-		MSG("nrf5340dk LED%d state: %s\n", leds[led_offset++].pin, led_state ? "ON" : "OFF");
-#endif
-
-#if 0
-		ret = bsp_gpio_set(leds[led_offset], led_state ? 1 : 0);
-		if (ret < 0) {
-			ERR("Failed to set LED %d\n", leds[led_offset].pin);
-			return ret;
-		}
-
-		MSG("nrf5340dk LED%d state: %s\n", leds[led_offset++].pin, led_state ? "ON" : "OFF");
-#endif
 		if(led_offset >= NUM_LED)
 		{
 			led_offset = 0;
 			led_state = !led_state;
 		}
-
-		k_msleep(SLEEP_TIME_MS);
+		bsp_led_toggle(led_offset++);
+#else
+		LOG_INF("Alive -> %d", k_uptime_get_32());
+#endif
+		k_msleep(SLEEP_TIME_MS*10);
 	}
 	return 0;
 }

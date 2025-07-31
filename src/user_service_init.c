@@ -19,18 +19,23 @@
 
 #include <zephyr/settings/settings.h>
 
-#include <dk_buttons_and_leds.h>
+// #include <dk_buttons_and_leds.h>
+#include "bsp.h"
+#include "user_service.h"
 
 #define DEVICE_NAME             CONFIG_BT_DEVICE_NAME
 #define DEVICE_NAME_LEN         (sizeof(DEVICE_NAME) - 1)
 
-#define RUN_STATUS_LED          DK_LED1
-#define CON_STATUS_LED          DK_LED2
+#define RUN_STATUS_LED          BSP_LED1
+#define CON_STATUS_LED          BSP_LED2
 #define RUN_LED_BLINK_INTERVAL  1000
 
-#define USER_LED                DK_LED3
+#define USER_LED                BSP_LED3
 
-#define USER_BUTTON             DK_BTN1_MSK
+#define USER_BUTTON             BSP_BTN1_MASK
+
+LOG_MODULE_REGISTER(nrf5340dk, LOG_LEVEL_DBG);
+// LOG_MODULE_DECLARE(nrf5340dk, LOG_LEVEL_DBG);
 
 static bool app_button_state;
 static struct k_work adv_work;
@@ -49,11 +54,11 @@ static void adv_work_handler(struct k_work *work)
 	int err = bt_le_adv_start(BT_LE_ADV_CONN_FAST_2, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
 
 	if (err) {
-		printk("Advertising failed to start (err %d)\n", err);
+		LOG_ERR("Advertising failed to start (err %d)\n", err);
 		return;
 	}
 
-	printk("Advertising successfully started\n");
+	LOG_INF("Advertising successfully started\n");
 }
 
 static void advertising_start(void)
@@ -64,25 +69,25 @@ static void advertising_start(void)
 static void connected(struct bt_conn *conn, uint8_t err)
 {
 	if (err) {
-		printk("Connection failed, err 0x%02x %s\n", err, bt_hci_err_to_str(err));
+		LOG_ERR("Connection failed, err 0x%02x %s\n", err, bt_hci_err_to_str(err));
 		return;
 	}
 
-	printk("Connected\n");
+	LOG_INF("Connected\n");
 
-	dk_set_led_on(CON_STATUS_LED);
+	bsp_led_set(CON_STATUS_LED, 1);
 }
 
 static void disconnected(struct bt_conn *conn, uint8_t reason)
 {
-	printk("Disconnected, reason 0x%02x %s\n", reason, bt_hci_err_to_str(reason));
+	LOG_INF("Disconnected, reason 0x%02x %s\n", reason, bt_hci_err_to_str(reason));
 
-	dk_set_led_off(CON_STATUS_LED);
+	bsp_led_set(CON_STATUS_LED, 0);
 }
 
 static void recycled_cb(void)
 {
-	printk("Connection object available from previous conn. Disconnect is complete!\n");
+	LOG_INF("Connection object available from previous conn. Disconnect is complete!\n");
 	advertising_start();
 }
 
@@ -95,9 +100,9 @@ static void security_changed(struct bt_conn *conn, bt_security_t level,
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 
 	if (!err) {
-		printk("Security changed: %s level %u\n", addr, level);
+		LOG_INF("Security changed: %s level %u\n", addr, level);
 	} else {
-		printk("Security failed: %s level %u err %d %s\n", addr, level, err,
+		LOG_ERR("Security failed: %s level %u err %d %s\n", addr, level, err,
 		       bt_security_err_to_str(err));
 	}
 }
@@ -119,7 +124,7 @@ static void auth_passkey_display(struct bt_conn *conn, unsigned int passkey)
 
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 
-	printk("Passkey for %s: %06u\n", addr, passkey);
+	LOG_INF("Passkey for %s: %06u\n", addr, passkey);
 }
 
 static void auth_cancel(struct bt_conn *conn)
@@ -128,7 +133,7 @@ static void auth_cancel(struct bt_conn *conn)
 
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 
-	printk("Pairing cancelled: %s\n", addr);
+	LOG_INF("Pairing cancelled: %s\n", addr);
 }
 
 static void pairing_complete(struct bt_conn *conn, bool bonded)
@@ -137,7 +142,7 @@ static void pairing_complete(struct bt_conn *conn, bool bonded)
 
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 
-	printk("Pairing completed: %s, bonded: %d\n", addr, bonded);
+	LOG_INF("Pairing completed: %s, bonded: %d\n", addr, bonded);
 }
 
 static void pairing_failed(struct bt_conn *conn, enum bt_security_err reason)
@@ -146,7 +151,7 @@ static void pairing_failed(struct bt_conn *conn, enum bt_security_err reason)
 
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 
-	printk("Pairing failed conn: %s, reason %d %s\n", addr, reason,
+	LOG_ERR("Pairing failed conn: %s, reason %d %s\n", addr, reason,
 	       bt_security_err_to_str(reason));
 }
 
@@ -166,7 +171,7 @@ static struct bt_conn_auth_info_cb conn_auth_info_callbacks;
 
 static void app_led_cb(bool led_state)
 {
-	dk_set_led(USER_LED, led_state);
+	bsp_led_set(USER_LED, led_state);
 }
 
 static bool app_button_cb(void)
@@ -174,29 +179,15 @@ static bool app_button_cb(void)
 	return app_button_state;
 }
 
-static struct bt_lbs_cb lbs_callbacs = {
+static struct bt_user_cb user_callback = {
 	.led_cb    = app_led_cb,
 	.button_cb = app_button_cb,
 };
 
 static void button_changed(uint32_t button_state, uint32_t has_changed)
 {
-	if (has_changed & USER_BUTTON) {
-		uint32_t user_button_state = button_state & USER_BUTTON;
-
-		bt_lbs_send_button_state(user_button_state);
-		app_button_state = user_button_state ? true : false;
+	if (has_changed) {
+		LOG_INF("Button %d pressed", button_state);
+		bt_user_send_button_state(true);
 	}
-}
-
-static int init_button(void)
-{
-	int err;
-
-	err = dk_buttons_init(button_changed);
-	if (err) {
-		printk("Cannot init buttons (err: %d)\n", err);
-	}
-
-	return err;
 }

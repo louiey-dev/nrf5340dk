@@ -2,13 +2,13 @@
 #include <stdint.h>
 #include <stdio.h>
 
-/* Button and LED APIs */
-/**
- * @typedef bsp_button_handler_t
- * @brief Callback that is executed when a button state change is detected.
- *
- * @param button_state Bitmask of button states.
- * @param has_changed Bitmask that shows which buttons have changed.
- */
-typedef void (*bsp_button_handler_t)(uint32_t button_state, uint32_t has_changed);
+enum en_btn_state{
+    BTN_WAITING = 0,
+    BTN_PRESSED = 1,
+};
+
+typedef struct KEY_STATUS_S{
+    enum en_btn_state state;  // Button state
+    uint16_t pressed_btn;
+}KEY_STATUS_ST;
 

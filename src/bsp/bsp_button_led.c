@@ -59,7 +59,8 @@ int bsp_button_led_init(bsp_button_handler_t btn_handler){
         if (!gpio_is_ready_dt(&dk_led[i])) {
             LOG_ERR("LED%d device not ready", i);
         } else {
-            ret = gpio_pin_configure_dt(&dk_led[i], GPIO_OUTPUT_ACTIVE);
+            // ret = gpio_pin_configure_dt(&dk_led[i], GPIO_OUTPUT_ACTIVE);
+            ret = gpio_pin_configure_dt(&dk_led[i], GPIO_OUTPUT_HIGH);
             if (ret < 0) {
                 LOG_ERR("Failed to configure LED%d (err %d)", i, ret);
             }

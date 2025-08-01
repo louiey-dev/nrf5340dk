@@ -1,11 +1,11 @@
 
-#include <zephyr/types.h>
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/kernel.h>
+#include <zephyr/types.h>
 #include <zephyr/drivers/gpio.h>
 #include <soc.h>
 
@@ -17,23 +17,16 @@
 
 #include <zephyr/settings/settings.h>
 
-// #include <dk_buttons_and_leds.h>
 #include "bsp.h"
 #include "user_service.h"
 
 #define DEVICE_NAME             CONFIG_BT_DEVICE_NAME
 #define DEVICE_NAME_LEN         (sizeof(DEVICE_NAME) - 1)
 
-#define RUN_STATUS_LED          BSP_LED1
 #define CON_STATUS_LED          BSP_LED2
-#define RUN_LED_BLINK_INTERVAL  1000
-
 #define USER_LED                BSP_LED3
 
-#define USER_BUTTON             BSP_BTN1_MASK
-
 LOG_MODULE_REGISTER(nrf5340dk, LOG_LEVEL_DBG);
-// LOG_MODULE_DECLARE(nrf5340dk, LOG_LEVEL_DBG);
 
 static bool app_button_state;
 static struct k_work adv_work;
@@ -157,8 +150,6 @@ static struct bt_conn_auth_info_cb conn_auth_info_callbacks = {
 	.pairing_complete = pairing_complete,
 	.pairing_failed = pairing_failed
 };
-// static struct bt_conn_auth_cb conn_auth_callbacks;
-// static struct bt_conn_auth_info_cb conn_auth_info_callbacks;
 
 static void app_led_cb(bool led_state)
 {
@@ -175,10 +166,10 @@ static struct bt_user_cb user_callback = {
 	.button_cb = app_button_cb,
 };
 
-static void button_changed(uint32_t button_state, uint32_t has_changed)
+static void button_changed(void* buf, uint16_t len)
 {
-	if (has_changed) {
-		LOG_INF("Button %d pressed", button_state);
-		bt_user_send_button_state(true);
-	}
+	uint8_t notify_buf[] = { 'n', 'o', 't', 'i', 'f', 'y' };
+	LOG_INF("Button %d pressed", ((uint8_t *)buf)[0]);
+	user_notify(notify_buf, sizeof(notify_buf));
+	// user_notify(buf, len);
 }

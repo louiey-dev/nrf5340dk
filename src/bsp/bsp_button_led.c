@@ -24,7 +24,16 @@
 #include <nrfx.h>
 
 #include "bsp.h"
-#include "bsp_button_led.h"
+
+enum en_btn_state{
+    BTN_WAITING = 0,
+    BTN_PRESSED = 1,
+};
+
+typedef struct KEY_STATUS_S{
+    enum en_btn_state state;  // Button state
+    uint16_t pressed_btn;
+}KEY_STATUS_ST;
 
 LOG_MODULE_REGISTER(led_button, LOG_LEVEL_DBG);
 
@@ -33,12 +42,10 @@ LOG_MODULE_REGISTER(led_button, LOG_LEVEL_DBG);
 
 static struct gpio_callback gpio_cb;
 static struct k_spinlock lock;
-static bsp_button_handler_t btn_handler_cd = NULL;
+static bsp_notify_cb_handler_t user_notify_cb = NULL;
 
 const struct gpio_dt_spec dk_led[] = { LED0, LED1, LED2, LED3 };
 static const struct gpio_dt_spec dk_buttons[] = { BTN0, BTN1, BTN2, BTN3 };
-
-// static enum en_btn_state btn_state = BTN_WAITING;
 
 static void button_pressed(const struct device *gpio_dev, struct gpio_callback *cb, uint32_t pins);
 static void btn_timer_expired(struct k_timer *timer_id);
@@ -47,19 +54,18 @@ K_TIMER_DEFINE(btn_timer, btn_timer_expired, NULL);
 
 KEY_STATUS_ST key_status = {0};
 
-int bsp_button_led_init(bsp_button_handler_t btn_handler){
+int bsp_button_led_init(bsp_notify_cb_handler_t notify_handler){
     int ret = 0;
     uint32_t pin_mask = 0;
 
     // register button callback here
-    btn_handler_cd = btn_handler;
+    user_notify_cb = notify_handler;
 
     // LEDs init
     for(int i = 0; i < NUM_LED; i++) {
         if (!gpio_is_ready_dt(&dk_led[i])) {
             LOG_ERR("LED%d device not ready", i);
         } else {
-            // ret = gpio_pin_configure_dt(&dk_led[i], GPIO_OUTPUT_ACTIVE);
             ret = gpio_pin_configure_dt(&dk_led[i], GPIO_OUTPUT_HIGH);
             if (ret < 0) {
                 LOG_ERR("Failed to configure LED%d (err %d)", i, ret);
@@ -168,7 +174,6 @@ static void button_pressed(const struct device *gpio_dev, struct gpio_callback *
 		}
 		if (val) {
 			ret |= 1U << i;
-            // LOG_INF("val 0x%x, ret 0x%x", val, ret);
 		}
 	}
     button = get_buttons(ret);
@@ -179,11 +184,9 @@ static void button_pressed(const struct device *gpio_dev, struct gpio_callback *
             key_status.state = BTN_PRESSED;
 
             k_timer_start(&btn_timer, K_MSEC(BTN_DETECT_TIME), K_NO_WAIT);
-            // LOG("btn + %d pressed\n", key_status.pressed_btn);
         }
     }
     else{
-        // LOG_INF("Button released, %d, %d, %d\n", val, key_status.pressed_btn, key_status.state);
         key_status.pressed_btn = 0;
         key_status.state = BTN_WAITING;
 
@@ -197,7 +200,6 @@ static void button_pressed(const struct device *gpio_dev, struct gpio_callback *
             k_timer_stop(&btn_timer);
         }
     }
-	// LOG("Button pressed on GPIO device %s, pins: 0x%08x\r\n", gpio_dev->name, pins);
     k_spin_unlock(&lock, key);
 }
 
@@ -213,10 +215,8 @@ static void btn_timer_expired(struct k_timer *timer_id) {
         val = gpio_pin_get_dt(&dk_buttons[offset - 1]);
         if(val > 0){
             // ! Button pressed here
-            // LOG_INF("Button %d pressed", offset);
-
-            if(btn_handler_cd){
-                btn_handler_cd(key_status.pressed_btn, 1);
+            if(user_notify_cb){
+                user_notify_cb(&offset, 1);
             }
             else{
             }
@@ -225,7 +225,5 @@ static void btn_timer_expired(struct k_timer *timer_id) {
             // LOG_ERR("Button expired with error, %d, %d", key_status.pressed_btn, key_status.state);
         }
         k_spin_unlock(&lock, key);
-
-    // printk("Timer expired!\n");
     }
 }

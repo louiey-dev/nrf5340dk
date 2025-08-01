@@ -54,16 +54,6 @@ struct bt_user_cb {
  */
 int bt_user_init(struct bt_user_cb *callbacks);
 
-/** @brief Send the button state.
- *
- * This function sends a binary state, typically the state of a
- * button, to all connected peers.
- *
- * @param[in] button_state The state of the button.
- *
- * @retval 0 If the operation was successful.
- *           Otherwise, a (negative) error code is returned.
- */
-int bt_user_send_button_state(bool button_state);
+int user_notify(void* buf, uint16_t len);
 
 #endif

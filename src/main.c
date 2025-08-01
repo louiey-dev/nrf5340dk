@@ -5,14 +5,12 @@
  */
 
 #include <stdio.h>
-// #include "bsp/bsp.h"
 #include "user_service_init.c"
 
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS   1000
 
 /* EXTERNS */
-extern struct gpio_dt_spec leds[NUM_LED];
 
 // LOG_MODULE_REGISTER(nrf5340dk, LOG_LEVEL_DBG);
 
@@ -74,17 +72,8 @@ int main(void)
 	LOG("User svc initialized\n");
 
 	while (1) {
-#if 0
-		/* Toggle the LED */
-		if(led_offset >= NUM_LED)
-		{
-			led_offset = 0;
-			led_state = !led_state;
-		}
-		bsp_led_toggle(led_offset++);
-#else
 		LOG_INF("Alive -> %d", k_uptime_get_32());
-#endif
+		
 		k_msleep(SLEEP_TIME_MS*10);
 	}
 	return 0;

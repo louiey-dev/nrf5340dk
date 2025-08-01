@@ -35,3 +35,6 @@ Test code on nrf5340dk board
   - BLE feature, notify/read/write implementing
     - Need more test and optimization
     - added user_xxx and replaced lbs_xxx files
+- 2025.08.01
+  - bt read/write/notify function renamed to user_read/write/notify
+  - code optimized and removed unused lines

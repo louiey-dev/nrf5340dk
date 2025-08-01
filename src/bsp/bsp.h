@@ -82,15 +82,7 @@ static const struct gpio_dt_spec BTN1 = GPIO_DT_SPEC_GET(BTN1_NODE, gpios);
 static const struct gpio_dt_spec BTN2 = GPIO_DT_SPEC_GET(BTN2_NODE, gpios);
 static const struct gpio_dt_spec BTN3 = GPIO_DT_SPEC_GET(BTN3_NODE, gpios);
 
-/* Button and LED APIs */
-/**
- * @typedef bsp_button_handler_t
- * @brief Callback that is executed when a button state change is detected.
- *
- * @param button_state Bitmask of button states.
- * @param has_changed Bitmask that shows which buttons have changed.
- */
-typedef void (*bsp_button_handler_t)(uint32_t button_state, uint32_t has_changed);
+typedef void (*bsp_notify_cb_handler_t)(void* buf, uint16_t len);
 
 /* Don't use*/
 int bsp_gpio_init(void);
@@ -98,6 +90,6 @@ int bsp_gpio_toggle(struct gpio_dt_spec led);
 int bsp_gpio_set(struct gpio_dt_spec led, int value);
 
 /* LEDs and Buttons*/
-int bsp_button_led_init(bsp_button_handler_t btn_handler);
+int bsp_button_led_init(bsp_notify_cb_handler_t notify_handler);
 int bsp_led_set(int led_offset, bool on);
 int bsp_led_toggle(int led_offset);

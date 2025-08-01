@@ -30,75 +30,62 @@ static void user_ccc_cfg_changed(const struct bt_gatt_attr *attr, uint16_t value
 	LOG_DBG("[%s] notify_enabled %d", USER_FUNC, value);
 }
 
-static ssize_t user_write_led(struct bt_conn *conn, const struct bt_gatt_attr *attr,
+static ssize_t user_write_fn(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 				const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
 {
-	LOG_DBG("[%s] Attribute write, handle: %u, conn: %p", USER_FUNC, attr->handle,
-		(void *)conn);
+	LOG_DBG("[%s] Attribute write, handle: %u, conn: %p, len %d", USER_FUNC, attr->handle,
+		(void *)conn, len);
 
-	if (len != 1U) {
-		LOG_DBG("Write led: Incorrect data length, %d", len);
-		return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
+	if(len == 2){
+		uint8_t *p = (uint8_t*)buf;
+		uint8_t led_num = p[0];
+		uint8_t led_state = p[1];
+		LOG_DBG("Write led: led_num 0x%x, led_state 0x%x", led_num, led_state);
+
+		bsp_led_set(led_num, led_state ? true : false);
+	}else{
+		LOG_DBG("rx len is invalid, expected 2 but %d", len);
 	}
-
-	if (offset != 0) {
-		LOG_DBG("Write led: Incorrect data offset, %d", offset);
-		return BT_GATT_ERR(BT_ATT_ERR_INVALID_OFFSET);
-	}
-
-	if (user_cb.led_cb) {
-		uint8_t val = *((uint8_t *)buf);
-
-		if (val == 0x00 || val == 0x01) {
-			user_cb.led_cb(val ? true : false);
-			LOG_DBG("Write led: %s", val ? "ON" : "OFF");
-		} else {
-			LOG_DBG("Write led: Incorrect value");
-			return BT_GATT_ERR(BT_ATT_ERR_VALUE_NOT_ALLOWED);
-		}
-	}
-	else{
-		LOG_ERR("[%s] CB not registered", USER_FUNC);
-	}
-
 	return len;
 }
 
-static ssize_t user_read_button(struct bt_conn *conn,
-			  const struct bt_gatt_attr *attr,
-			  void *buf,
-			  uint16_t len,
-			  uint16_t offset)
+static ssize_t user_read_fn(struct bt_conn *conn, const struct bt_gatt_attr *attr,
+			  					void *buf, uint16_t len, uint16_t offset)
 {
 	const char *value = attr->user_data;
+	uint8_t rx_buf[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n'};
 
-	LOG_DBG("[%s] Attribute read, handle: %u, conn: %p", USER_FUNC, attr->handle,
-		(void *)conn);
+	LOG_DBG("[%s] Attribute read, handle: %u, conn: %p, len %d", USER_FUNC, attr->handle,
+		(void *)conn, len);
 
-	if (user_cb.button_cb) {
-		button_state = user_cb.button_cb();
-		return bt_gatt_attr_read(conn, attr, buf, len, offset, value,
-					 sizeof(*value));
-	}
+	LOG_HEXDUMP_INF(buf, sizeof(buf), "Read Buf!");
+	LOG_HEXDUMP_INF(value, sizeof(*value), "Read Value!");
 
-	return 0;
+	return bt_gatt_attr_read(conn, attr, buf, len, offset, rx_buf, sizeof(rx_buf));
 }
 
-/* LED Button Service Declaration */
+/* User Service Declaration */
 BT_GATT_SERVICE_DEFINE(user_svc,
 BT_GATT_PRIMARY_SERVICE(BT_UUID_USER),
 	BT_GATT_CHARACTERISTIC(BT_UUID_USER_BUTTON,
 			       BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
-			       BT_GATT_PERM_READ, user_read_button, NULL,
+			       BT_GATT_PERM_READ, user_read_fn, NULL,
 			       &button_state),
 	BT_GATT_CCC(user_ccc_cfg_changed,
 		    BT_GATT_PERM_READ | BT_GATT_PERM_WRITE),
 	BT_GATT_CHARACTERISTIC(BT_UUID_USER_LED,
 			       BT_GATT_CHRC_WRITE,
 			       BT_GATT_PERM_WRITE,
-			       NULL, user_write_led, NULL),
+			       NULL, user_write_fn, NULL),
 );
 
+/*!
+ @brief        register user callbacks
+ @note         
+ @param[in]    user callback methods
+ @param[out]   
+ @return       0 with success
+*/
 int bt_user_init(struct bt_user_cb *callbacks)
 {
 	if (callbacks) {
@@ -109,14 +96,15 @@ int bt_user_init(struct bt_user_cb *callbacks)
 	return 0;
 }
 
-int bt_user_send_button_state(bool button_state)
+int user_notify(void* buf, uint16_t len)
 {
 	if (!notify_enabled) {
+		LOG_ERR("Notify not enabled");
 		return -EACCES;
 	}
-	LOG_DBG("[%s] Sending button state: %d", USER_FUNC, button_state);
+	LOG_DBG("[%s] Notify : %d", USER_FUNC, len);
+	LOG_HEXDUMP_INF(buf, len, "Notify Buf");
 
-	return bt_gatt_notify(NULL, &user_svc.attrs[2],
-			      &button_state,
-			      sizeof(button_state));
+	return bt_gatt_notify(NULL, &user_svc.attrs[2], buf, len);
 }
+

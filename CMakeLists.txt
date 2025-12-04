@@ -3,4 +3,18 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(nrf5340dk)
 
+<<<<<<< HEAD
 target_sources(app PRIVATE src/main.c)
+=======
+target_include_directories(app PRIVATE
+    src/bsp)
+
+target_sources(app PRIVATE 
+    src/main.c
+    src/user_service.c
+    src/bsp/bsp_gpio.c
+    src/bsp/bsp_button_led.c
+    )
+
+target_sources_ifdef(CONFIG_MYFUNCTION app PRIVATE src/myfunction.c)
+>>>>>>> bb6f4b3af341752c6e3ed438b33b5764be077fb5

@@ -1,0 +1,39 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "C:/ncs/v3.0.2"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"gpio.h": "c",
+			"kernel.h": "c",
+			"type_traits": "c",
+			"bsp.h": "c",
+			"bluetooth.h": "c",
+			"settings.h": "c",
+			"log.h": "c",
+			"device.h": "c",
+			"array": "c",
+			"string": "c",
+			"string_view": "c",
+			"dk_buttons_and_leds.h": "c",
+			"uuid.h": "c",
+			"compare": "cpp",
+			"util.h": "c",
+			"user_profile.h": "c",
+			"bsp_button_led.h": "c",
+			"optional": "c",
+			"ratio": "c",
+			"system_error": "c",
+			"functional": "c",
+			"tuple": "c",
+			"utility": "c",
+			"string.h": "c"
+		},
+		"nrf-connect.applications": []
+	}
+}
